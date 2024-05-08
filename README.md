@@ -109,22 +109,26 @@ State-sync
 
 Create wallet
 
-    0gchaind keys add <key_name> --eth
+    0gchaind keys add wallet --eth
 
 get your key’s private key
 
-    0gchaind keys unsafe-export-eth-key <key_name>
+    0gchaind keys unsafe-export-eth-key wallet
+
+Convert from Cosmos wallet to evm
+
+    echo "0x$(0gchaind debug addr 0g1dywsndf7xh5n3l690cpgw67j8ekjy9wlp8z8dg | grep hex | awk '{print $3}')"    
 
 Create Validator
 
     0gchaind tx staking create-validator \
-    --amount=1700000ua0gi \
+    --amount=1000000ua0gi \
     --pubkey=$(0gchaind tendermint show-validator) \
-    --moniker="Validator247" \
-    --identity="369E23D7BC0B9982" \
-    --website="https://validator247.com" \
-    --security-contact="validator247@gmail.com" \
-    --details="Specializing in operating nodes and validators on EVM and Cosmos ecosystems with Proof-of-Stake" \
+    --moniker="nodename" \
+    --identity="keybase" \
+    --website="zzzzzzz" \
+    --security-contact="vzzzzzz@gmail.com" \
+    --details="love validator247" \
     --chain-id=zgtendermint_16600-1 \
     --commission-rate="0.10" \
     --commission-max-rate="0.20" \
