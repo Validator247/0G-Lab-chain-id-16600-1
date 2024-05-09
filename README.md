@@ -54,59 +54,6 @@ Seeds & Peers
     SEEDS=""
     sed -i -e "s/^seeds =./seeds = "$SEEDS"/; s/^persistent_peers =./persistent_peers = "$PEERS"/" $HOME/.0gchain/config/config.toml
 
-Create service:
-
-    sudo tee /etc/systemd/system/0gchaind.service > /dev/null <<EOF
-    [Unit]
-    Description=Ogchain Node
-    After=network-online.target
-
-    [Service]
-    User=root
-    WorkingDirectory=/root/.0gchain
-    ExecStart=/root/go/bin/0gchaind start --home /root/.0gchain
-    Restart=on-failure
-    RestartSec=5
-    LimitNOFILE=65535
-
-    [Install]
-    WantedBy=multi-user.target
-    EOF
-
-Snapshot
-
-    sudo systemctl stop 0gchaind
-    cp $HOME/.0gchain/data/priv_validator_state.json $HOME/.0gchain/priv_validator_state.json.backup
-    rm -rf $HOME/.0gchain/data
-    0gchaind tendermint unsafe-reset-all --home ~/.0gchain/ --keep-addr-book
-    curl https://snapshot.validatorvn.com/og/data.tar.lz4 | lz4 -dc - | tar -xf - -C $HOME/.0gchain
-    mv $HOME/.0gchain/priv_validator_state.json.backup $HOME/.0gchain/data/priv_validator_state.json
-    sudo systemctl restart 0gchaind && sudo journalctl -u 0gchaind -f -o cat
-
-State-sync
-
-    sudo systemctl stop 0gchaind
-    cp $HOME/.0gchain/data/priv_validator_state.json $HOME/.0gchain/priv_validator_state.json.backup
-    0gchaind tendermint unsafe-reset-all --home ~/.0gchain/ --keep-addr-book
-    SNAP_RPC="https://ogd-rpc.validatorvn.com:443"
-
-    LATEST_HEIGHT=$(curl -s $SNAP_RPC/block | jq -r .result.block.header.height); \
-    BLOCK_HEIGHT=$((LATEST_HEIGHT - 2000)); \
-    TRUST_HASH=$(curl -s "$SNAP_RPC/block?height=$BLOCK_HEIGHT" | jq -r .result.block_id.hash)
-    echo $LATEST_HEIGHT $BLOCK_HEIGHT $TRUST_HASH
-
-    sed -i.bak -E "s|^(enable[[:space:]]+=[[:space:]]+).*$|\1true| ; \
-    s|^(rpc_servers[[:space:]]+=[[:space:]]+).*$|\1\"$SNAP_RPC,$SNAP_RPC\"| ; \
-    s|^(trust_height[[:space:]]+=[[:space:]]+).*$|\1$BLOCK_HEIGHT| ; \
-    s|^(trust_hash[[:space:]]+=[[:space:]]+).*$|\1\"$TRUST_HASH\"|" ~/.0gchain/config/config.toml
-    more ~/.0gchain/config/config.toml | grep 'rpc_servers'
-    more ~/.0gchain/config/config.toml | grep 'trust_height'
-    more ~/.0gchain/config/config.toml | grep 'trust_hash'
-
-    sudo mv $HOME/.0gchain/priv_validator_state.json.backup $HOME/.0gchain/data/priv_validator_state.json
-
-    sudo systemctl restart 0gchaind && journalctl -u 0gchaind -f -o cat
-
 Create wallet
 
     0gchaind keys add wallet --eth
