@@ -86,5 +86,9 @@ Create Validator
     --gas=300000 \
     -y
 
+Delegate your validator ( Change the information as appropriate for your node )
+
+    0gchaind tx staking delegate 0gvaloper1yrxeg4symqpfv5r3p9jemkwkgm284j5xgusn6g 980000ua0gi --chain-id=zgtendermint_16600-1 --from wallet --fees=20000ua0gi -y    
+
 # Done         
 
